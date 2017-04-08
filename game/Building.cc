@@ -44,24 +44,31 @@ public:
         }
     };
 
-    Building(float w, float h, float xPos, float yPos, Color c){
+    Building(float w, float h, float xPos, float yPos, Color c, int i){
         width = w;
         height = h;
         x = xPos;
         y = yPos;
+        display = true;
 
         r = c.r;
         g = c.g;
         b = c.b;
         a = c.a;
 
+        id = i;
+
     }
 
-    Building(float w, float h, float xPos, float yPos){
+    Building(float w, float h, float xPos, float yPos, int i){
         width = w;
         height = h;
         x = xPos;
         y = yPos;
+
+        display = true;
+
+        id = i;
 
         Color c = Color(1.0, 1.0, 1.0, 1.0);
 
@@ -74,6 +81,11 @@ public:
 
     }
 
+    static int gen_id;
+
+    int id;
+    bool display;
+
     float width;
     float height;
     float x;
@@ -85,24 +97,27 @@ public:
     float a;
 
     void draw() {
-        glMatrixMode(GL_MODELVIEW);
 
-        glPushMatrix();
+            glMatrixMode(GL_MODELVIEW);
 
-        glLoadIdentity();
+            glPushMatrix();
 
-        glLineWidth(1.0);
+            glLoadIdentity();
 
-        glTranslatef(x, (height/2) - 5, y);
-        glColor4f(r, g, b, a);
-        //cout << "Building drawing itself at " << x << " " << y << endl;
-        glScalef(1, height, 1);
-        glutSolidCube(width);
-        glColor4f(0.0, 0.0, 0.0, 0.5);
+            glLineWidth(1.0);
 
-        glutWireCube(width);
+            glTranslatef(x, (height / 2) - 5, y);
+            glColor4f(r, g, b, a);
+            //cout << "Building drawing itself at " << x << " " << y << endl;
+            glScalef(1, height, 1);
 
-        glPopMatrix();
+            glutSolidCube(width);
+            glColor4f(0.0, 0.0, 0.0, 0.5);
+
+            glutWireCube(width);
+
+            glPopMatrix();
+
     }
 
 };
