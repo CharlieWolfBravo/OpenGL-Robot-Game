@@ -11,11 +11,11 @@ all: robot
 # robot: main.cpp bmpread.c
 # 	$(CC) $(CFLAGS) -o $@ $(LIBDIR) $< $(LIBRARIES)
 
-robot: main.o bmpread.o Building.o
-	gcc -c bmpread.c
+robot: main.o Building.o Robot.o
 	gcc -c Building.cc
+	gcc -c Robot.cc
 	gcc -c main.cpp
-	$(CC) $(CFLAGS) main.o bmpread.o Building.o -o robot $(LIBDIR) $(LIBRARIES)
+	$(CC) $(CFLAGS) main.o Building.o -o robot $(LIBDIR) $(LIBRARIES)
 
 clean:
 	rm -f *.o *~ robot

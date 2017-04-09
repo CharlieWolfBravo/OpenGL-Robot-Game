@@ -1,6 +1,7 @@
 #define PROGRAM_TITLE "Lance Chisholm - 001177098"
 #define DISPLAY_INFO "Press the Z key to move the cube along the Z axis. Press the right mouse button to move the camera."
 
+
 #include <stdlib.h>  // Useful for the following includes.
 #include <stdio.h>    
 #include <string.h>  // For spring operations.
@@ -16,9 +17,11 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "bmpread.h"
+
 #include "Building.cc"
-#include <vector>
+#include "Robot.cc"
+#include <bits/stdc++.h>
+
 
 static GLuint ground;
 static GLuint sky;
@@ -26,13 +29,13 @@ static GLuint horizon;
 
 vector<Building*> buildings;
 
-float cameraHeight = 0;
+float cameraHeight = -2;
 float cameraLookX = 0;
-float cameraLookY = 0;
+float cameraLookZ = 0;
 
 float cameraPositionX = 0;
-float cameraPositionY = 0;
-float cameraPositionZ = -5;
+float cameraPositionY = -2;
+float cameraPositionZ = 0;
 
 float cameraAngle = 0;
 float cameraDistance = 1;
@@ -44,38 +47,136 @@ int Building::gen_id = 0;
 
 int SIZE = 1024;
 
+int camera_state = 0;
 
-GLuint LoadTexture(const char * bitmap_file)
-{
-	GLuint texture = 0;
-	bmpread_t bitmap;
+//VARIABLES TO HELP TRACK ROBOT
+Robot Philip(0,-4.5,0);
 
-	if(!bmpread(bitmap_file, 0, &bitmap))
-	{
-		fprintf(stderr, "%s: error loading bitmap file\n", bitmap_file);
-		exit(1);
-	}
-
-	/* At this point, bitmap.width and .height hold the pixel dimensions of the
-	 * file, and bitmap.rgb_data holds the raw pixel data in RGB triplets.
-	 */
-
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, 3, bitmap.width, bitmap.height, 0,
-				 GL_RGB, GL_UNSIGNED_BYTE, bitmap.rgb_data);
-
-	bmpread_free(&bitmap);
-
-	return texture;
-}
 
 void calcCameraLook(){
-	cameraLookY = cos(cameraAngle) * cameraDistance;
-	cameraLookX = sin(cameraAngle) * cameraDistance;
+	switch(camera_state){
+		case 0:
+			cameraPositionY = -2;
+			switch(Philip.direction){
+				case 0:
+					cameraPositionX = Philip.robot_center.x;
+					cameraPositionZ = Philip.robot_center.z-5;
+				break;
+				case 2:
+					cameraPositionX = Philip.robot_center.x;
+					cameraPositionZ = Philip.robot_center.z+5;
+				break;
+				case 1:
+					cameraPositionX = Philip.robot_center.x-5;
+					cameraPositionZ = Philip.robot_center.z;
+				break;
+				case 3:
+					cameraPositionX = Philip.robot_center.x+5;
+					cameraPositionZ = Philip.robot_center.z;
+				break;
+			}
+		break;
+		case 6:
+			switch(Philip.direction){
+				case 0://north
+					cameraPositionX = Philip.robot_center.x-5;
+					cameraPositionY = -1;
+					cameraPositionZ = Philip.robot_center.z-5;
+				break;
+				case 2://south
+					cameraPositionX = Philip.robot_center.x+5;
+					cameraPositionY = -1;
+					cameraPositionZ = Philip.robot_center.z+5;
+				break;
+				case 1://east
+					cameraPositionX = Philip.robot_center.x-5;
+					cameraPositionY = -1;
+					cameraPositionZ = Philip.robot_center.z+5;
+				break;
+				case 3://west
+					cameraPositionX = Philip.robot_center.x+5;
+					cameraPositionY = -1;
+					cameraPositionZ = Philip.robot_center.z-5;
+				break;
+			}
+		break;
+		case 5:
+			switch(Philip.direction){
+				case 0://north
+					cameraPositionX = Philip.robot_center.x+5;
+					cameraPositionY = -1;
+					cameraPositionZ = Philip.robot_center.z-5;
+				break;
+				case 2://south
+					cameraPositionX = Philip.robot_center.x-5;
+					cameraPositionY = -1;
+					cameraPositionZ = Philip.robot_center.z+5;
+				break;
+				case 1://east
+					cameraPositionX = Philip.robot_center.x-5;
+					cameraPositionY = -1;
+					cameraPositionZ = Philip.robot_center.z-5;
+				break;
+				case 3://west
+					cameraPositionX = Philip.robot_center.x+5;
+					cameraPositionY = -1;
+					cameraPositionZ = Philip.robot_center.z+5;
+				break;
+			}
+		break;
+		case 7:
+			switch(Philip.direction){
+				case 0://north
+					cameraPositionX = Philip.robot_center.x-5;
+					cameraPositionY = -1;
+					cameraPositionZ = Philip.robot_center.z+5;
+				break;
+				case 2://south
+					cameraPositionX = Philip.robot_center.x+5;
+					cameraPositionY = -1;
+					cameraPositionZ = Philip.robot_center.z-5;
+				break;
+				case 1://east
+					cameraPositionX = Philip.robot_center.x+5;
+					cameraPositionY = -1;
+					cameraPositionZ = Philip.robot_center.z+5;
+				break;
+				case 3://west
+					cameraPositionX = Philip.robot_center.x-5;
+					cameraPositionY = -1;
+					cameraPositionZ = Philip.robot_center.z-5;
+				break;
+			}
+		break;
+		case 8:
+			switch(Philip.direction){
+				case 0://north
+					cameraPositionX = Philip.robot_center.x+5;
+					cameraPositionY = -1;
+					cameraPositionZ = Philip.robot_center.z+5;
+				break;
+				case 2://south
+					cameraPositionX = Philip.robot_center.x-5;
+					cameraPositionY = -1;
+					cameraPositionZ = Philip.robot_center.z-5;
+				break;
+				case 1://east
+					cameraPositionX = Philip.robot_center.x+5;
+					cameraPositionY = -1;
+					cameraPositionZ = Philip.robot_center.z-5;
+				break;
+				case 3://west
+					cameraPositionX = Philip.robot_center.x-5;
+					cameraPositionY = -1;
+					cameraPositionZ = Philip.robot_center.z+5;
+				break;
+			}
+	}
+	
+	// cameraLookZ = cos(cameraAngle) * cameraDistance;
+	// cameraLookX = sin(cameraAngle) * cameraDistance;
+	cameraLookZ = Philip.robot_center.z;
+	cameraLookX = Philip.robot_center.x;
 }
 
 Building::Color randomColor() {
@@ -98,7 +199,7 @@ void buildingInit() {
 
 		for (int i = 1; i < 16; i++) {
 
-			cout << "X: " << startX << " Y: "<< startY<< endl;
+			//cout << "X: " << startX << " Y: "<< startY<< endl;
 
 
 			int buildingHeight = (rand() % 4 +1);
@@ -124,7 +225,7 @@ void buildingInit() {
 
 		for (int i = 1; i < 16; i++) {
 
-			cout << "X: " << startX << " Y: "<< startY<< endl;
+			//cout << "X: " << startX << " Y: "<< startY<< endl;
 
 			int buildingHeight = (rand() % 4 +1);
 			int buildingWidth = (rand() % 2 + 1);
@@ -147,7 +248,7 @@ void buildingInit() {
 
 		for (int i = 1; i < 16; i++) {
 
-			cout << "X: " << startX << " Y: "<< startY<< endl;
+			//cout << "X: " << startX << " Y: "<< startY<< endl;
 
 
 			int buildingHeight = (rand() % 4 +1);
@@ -169,9 +270,10 @@ void buildingInit() {
 	for (int j = 1; j < 16; j++) {
 		float startX = 0;
 
+
 		for (int i = 1; i < 16; i++) {
 
-			cout << "X: " << startX << " Y: "<< startY<< endl;
+			//cout << "X: " << startX << " Y: "<< startY<< endl;
 
 			int buildingHeight = (rand() % 4 +1);
 			int buildingWidth = (rand() % 2 + 1);
@@ -190,6 +292,7 @@ void buildingInit() {
 
 void init(void)
 {
+	//out << "wat...\n";
 	glClearColor (0.0, 0.0, 0.0, 0.0);
 	glShadeModel(GL_FLAT);
 	glEnable(GL_DEPTH_TEST);
@@ -208,10 +311,14 @@ void init(void)
 
 	// create some building
 	buildingInit();
+	//cout << "Starting robot...\n";
+	Philip.head_ROT = 0;
+	Philip.body_ROT = 0;
+	Philip.direction = 0;
 }
 
 void destroy(int value) {
-	cout << "destroying " << value << " height " << buildings[value]->height << endl;
+	//cout << "destroying " << value << " height " << buildings[value]->height << endl;
 
 	if (buildings[value]->height >= 0) {
 		buildings[value]->height -= 0.1;
@@ -252,24 +359,11 @@ void drawBuildings(GLenum mode) {
 		}
 	}
 }
-
-
 void draw_environment(GLenum mode){
 
 	// CLEAR THE BUFFER, all drawing code should be after this point
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluPerspective(90, (GLfloat) windowWidth/(GLfloat) windowHeight, 1.0, 300.0);
-
-	cout << "Cam height: " << cameraHeight << " CamX: " << cameraLookX <<  " CamY: " << cameraLookY << endl;
-	cout << "Cam angle: " << cameraAngle << endl;
-
-    cout << "Cam posX: " << cameraPositionX << " Cam posY: " << cameraPositionY <<  " CamY: " << endl;
-
-	calcCameraLook();
-	gluLookAt(cameraPositionX, cameraHeight, cameraPositionY, cameraLookX, 0,cameraLookY, 0, 1, 0);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -356,12 +450,19 @@ void draw_environment(GLenum mode){
 
 }
 
-void display(void)
-{
-	draw_environment(GL_RENDER);
+void cameraFunc(){
+	
+	gluPerspective(90, (GLfloat) windowWidth/(GLfloat) windowHeight, 1.0, 300.0);
 
+	// cout << "Cam height: " << cameraPositionY << " CamX: " << cameraLookX <<  " CamY: " << cameraLookZ << endl;
+	// cout << "Cam angle: " << cameraAngle << endl;
 
-	glutSwapBuffers();
+ //    cout << "Cam posX: " << cameraPositionX << " Cam posY: " << cameraPositionY <<  " CamY: " << endl;
+
+	calcCameraLook();
+	//cameraRobotCalc();
+	//gluLookAt(0, 3, -4.5, Philip.robot_center.x, Philip.robot_center.y+2, Philip.robot_center.z, 0, 1, 0);
+	gluLookAt(cameraPositionX, cameraPositionY, cameraPositionZ, cameraLookX, Philip.robot_center.y+2,cameraLookZ, 0, 1, 0);
 }
 
 void reshape(int w, int h)
@@ -375,11 +476,64 @@ void reshape(int w, int h)
 	glLoadIdentity();
 	gluPerspective(90, (GLfloat) w/(GLfloat) h, 1.0, 300.0);
 
-	calcCameraLook();
-	gluLookAt(cameraPositionX, cameraHeight, cameraPositionY, cameraLookX, 0,cameraLookY, 0, 1, 0);
+	//calcCameraLook();
+	//gluLookAt(cameraPositionX, cameraHeight, cameraPositionY, cameraLookX, 0,cameraLookY, 0, 1, 0);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+}
+
+bool valid_forward(){
+	int x1 = Philip.robot_center.x, x2 = Philip.robot_center.z;
+	if((x1%10) == 0 || (x2%10) == 0){
+		//cout<< (x1%10)<<" "<<(x2%10)<<endl;
+		return true;
+	}
+	//cout << "cant walk on grass...\n";
+	return false;
+}
+
+void forwardMove(){
+	if(valid_forward()){
+		int x1 = Philip.robot_center.x, x2 = Philip.robot_center.z;
+		switch (Philip.direction){
+			case 0://n
+				if(x1 % 10 == 0 && x2 < 40)
+					Philip.robot_center.z +=1.0;
+				break;
+			case 1://e
+				if(x2 % 10 == 0 && x1 < 40)
+					Philip.robot_center.x +=1.0;
+				break;
+			case 2://s
+				if(x1 % 10 == 0 && x2 > -40)
+					Philip.robot_center.z -=1.0;
+				break;
+			case 3://w
+				if(x2 % 10 == 0 && x1 > -40)
+					Philip.robot_center.x -=1.0;
+				break;
+		}
+		//cout << Philip.robot_center.x << " " << Philip.robot_center.z << "\n";
+	}
+}
+
+void Turn(char t){
+	int x1 = Philip.robot_center.x, x2 = Philip.robot_center.z;
+	if(x1 % 10 == 0 && x2%10 == 0)
+		switch(t){
+			case 'q':
+				//check for intesection here.
+				Philip.body_ROT += 90;
+				Philip.direction = (Philip.direction+1)%4;
+				break;
+			case 'a':
+				//check for intesection here.
+
+				Philip.body_ROT -= 90;
+				Philip.direction = (Philip.direction+3)%4;
+				break;
+		}
 }
 
 void keyboard (unsigned char key, int x, int y)
@@ -388,46 +542,56 @@ void keyboard (unsigned char key, int x, int y)
 		case 27:
 			exit(0);
 			break;
-		case 's':
-			cameraDistance -=1;
-			if (cameraDistance < 1)
-				cameraDistance = 1;
+		case 'z':
+			forwardMove();
 			break;
-		case 'w':
-			cameraDistance +=1;
+		case 'q':
+			Turn('q');
 			break;
 		case 'a':
-			cameraAngle +=0.1;
+			Turn('a');
 			break;
-		case 'd':
-			cameraAngle -=0.1;
-			break;
-
 		default:
-			cout << "key: " << key << endl;
+		//cout << "key: " << key << endl;
 			break;
 	}
+
 }
 
 void SpecialInput(int key, int x, int y) {
 	switch (key) {
-		case GLUT_KEY_UP:
-//do something here
-			cameraPositionX += 0.1;
+		case GLUT_KEY_F1:
+			Philip.head_ROT = 0;
 			break;
-		case GLUT_KEY_DOWN:
-			cameraPositionX -= 0.1;
-//do something here
+		case GLUT_KEY_F5:
+			camera_state = 5;
 			break;
-		case GLUT_KEY_LEFT:
-			cameraPositionY += 0.1;
-//do something here
+		case GLUT_KEY_F6:
+			camera_state = 6;
 			break;
-		case GLUT_KEY_RIGHT:
-			cameraPositionY -= 0.1;
-//do something here
+		case GLUT_KEY_F8:
+			camera_state = 8;
+			break;
+		case GLUT_KEY_F7:
+			camera_state = 7;
+			break;
+		case GLUT_KEY_F4:
+			camera_state = 0;
 			break;
 	}
+	if(key == GLUT_KEY_F2){
+		Philip.head_ROT = -90;
+	}else if(key == GLUT_KEY_F3){
+		Philip.head_ROT = 90;
+	}
+}
+void upFunc(int c, int x, int y){
+	//cout << c << "!!!!!!!!!!\n";
+	if(c == GLUT_KEY_F2 || c == GLUT_KEY_F3){
+		Philip.head_ROT = 0;
+		//cout << "realeased...\n";
+	}
+
 }
 
 void processHits(GLint hits, GLuint buffer[])
@@ -436,26 +600,31 @@ void processHits(GLint hits, GLuint buffer[])
 	unsigned int i, j;
 	GLint ii, jj, names, *ptr;
 
-	printf ("hits = %d\n", hits);
+	//printf ("hits = %d\n", hits);
 	ptr = (GLint *) buffer;
-
+	//cout << "Help...\n";
+	if(hits == 0) return;
 	for (i = 0; i < 1; i++) { // For each hit record,
 		names = *ptr;             // How many names are in this hit record?
 		ptr += 3;                   // Skip the depth min and max information.
-
+		
 		for (j = 0; j < names; j++) { //  Look for each name in this record
 
-			if (j == 0)
-				buildings[*ptr]->display = false;
+			if (j == 0 && ptr != NULL){
+				//draw the laser.
 
-			cout << *ptr << endl;
+				buildings[*ptr]->display = false;
+			}
+
+			//out << *ptr << endl;
+
 
 			ptr++;                          // Go to the next name
 		}
 		// When this loop is done, ptr points to the start of the next hit record.
-		printf("\n");
+		//printf("\n");
 	}
-	cout << "End of Processing hits" << endl;
+	//cout << "End of Processing hits" << endl;
 }
 
 void mouseFunc(int button, int state, int x, int y) {
@@ -489,17 +658,11 @@ void mouseFunc(int button, int state, int x, int y) {
 		// The picking region in this case is a 5x5 window. You may find that it is not
 		// appropriate for your application. Do some tests to find an appropriate value
 		// if you're finding it hard to pick the right objects.
-		//
+
 		gluPickMatrix((GLdouble) x, (GLdouble)(viewport[3] - y),
-					  1.0, 1.0, viewport);
+					  5.0, 5.0, viewport);
 
-		gluPerspective(90, (GLfloat) windowWidth/(GLfloat) windowHeight, 1.0, 300.0);
-
-	cout << "Cam height: " << cameraHeight << " CamX: " << cameraLookX <<  " CamY: " << cameraLookY << endl;
-	cout << "Cam angle: " << cameraAngle << endl;
-
-		calcCameraLook();
-		gluLookAt(cameraPositionX, cameraHeight, cameraPositionY, cameraLookX, 0,cameraLookY, 0, 1, 0);
+		cameraFunc();
 
 		//gluOrtho2D(-5, 5, -5, 5);
 
@@ -519,15 +682,30 @@ void mouseFunc(int button, int state, int x, int y) {
 	}
 }
 
+void display(void)
+{
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	cameraFunc();
+	//cout << "Drawing...\n";
+	draw_environment(GL_RENDER);
+	glTranslatef(Philip.robot_center.x,Philip.robot_center.y,Philip.robot_center.z);
+	Philip.robot_body();
+	glTranslatef(0,0.4,0);
+	Philip.robot_head();
+	glutSwapBuffers();
+}
+
 int main(int argc, char** argv)
 {
+	//cout << "Hello there!\n";
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowSize(750, 750);
 
 	windowHeight = 750;
 	windowWidth = 750;
-
+	//cout << "wat\n";
 	glutInitWindowPosition(100, 100);
 	glutCreateWindow(argv[0]);
 	init();
@@ -535,9 +713,10 @@ int main(int argc, char** argv)
 	glutIdleFunc(display);
 	glutReshapeFunc(reshape);
 	glutKeyboardFunc(keyboard);
+	glutSpecialUpFunc(upFunc);
 	glutSpecialFunc(SpecialInput);
 	glutMouseFunc(mouseFunc);
-
+	//cout << "ready...\n";
 	glutMainLoop();
 	return 0;
 }
