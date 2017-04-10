@@ -37,6 +37,9 @@ float cameraPositionX = 0;
 float cameraPositionY = -2;
 float cameraPositionZ = 0;
 
+float originalCamPosZ = 0;
+float originalCamPosX = 0;
+
 float cameraAngle = 0;
 float cameraDistance = 1;
 
@@ -48,34 +51,173 @@ int Building::gen_id = 0;
 int SIZE = 1024;
 
 int camera_state = 0;
+int startingBody = 0;
+
+bool firstRun = true;
+bool moving = false;
 
 //VARIABLES TO HELP TRACK ROBOT
 Robot Philip(0,-4.5,0);
 
 bool paused;
 
+void cameraAnimLeft(int value) {
+	switch(value){
+		case 0:
+			//cameraPositionX = Philip.robot_center.x;
+			if (cameraPositionZ >= originalCamPosZ - 5) {
+
+				cameraPositionZ -= 0.1;
+				cameraPositionX -= 0.1;
+				glutTimerFunc(20, cameraAnimLeft, value);
+
+			} else {
+				cameraPositionZ = originalCamPosZ - 5;
+				cameraPositionX = Philip.robot_center.x;
+				moving = false;
+
+			}
+
+			break;
+		case 2:
+			//cameraPositionX = Philip.robot_center.x;
+			if (cameraPositionZ <= originalCamPosZ + 5) {
+				cameraPositionZ += 0.1;
+				cameraPositionX += 0.1;
+
+				glutTimerFunc(20, cameraAnimLeft, value);
+			} else {
+				cameraPositionZ = originalCamPosZ + 5;
+				cameraPositionX = Philip.robot_center.x;
+				moving = false;
+
+
+			}
+			break;
+		case 1:
+			if (cameraPositionX >= originalCamPosX - 5) {
+				cameraPositionX -= 0.1;
+				cameraPositionZ += 0.1;
+
+				glutTimerFunc(20, cameraAnimLeft, value);
+			} else {
+				cameraPositionX = originalCamPosX - 5;
+				cameraPositionZ = Philip.robot_center.z;
+				moving = false;
+
+
+			}
+
+			break;
+		case 3:
+			if (cameraPositionX <= originalCamPosX + 5) {
+				cameraPositionX += 0.1;
+				cameraPositionZ -= 0.1;
+
+				glutTimerFunc(20, cameraAnimLeft, value);
+			} else {
+				cameraPositionX = originalCamPosX + 5;
+				cameraPositionZ = Philip.robot_center.z;
+				moving = false;
+
+			}
+			break;
+	}
+}
+
+void cameraAnimRight(int value) {
+	switch(value){
+		case 0:
+			//cameraPositionX = Philip.robot_center.x;
+			if (cameraPositionX <= originalCamPosX + 5) {
+
+				cameraPositionZ += 0.1;
+				cameraPositionX += 0.1;
+				glutTimerFunc(20, cameraAnimRight, value);
+
+			} else {
+				cameraPositionX = originalCamPosX + 5;
+				cameraPositionZ = Philip.robot_center.z;
+				moving = false;
+
+
+			}
+
+			break;
+		case 2:
+			if (cameraPositionX >= originalCamPosX - 5) {
+				cameraPositionZ -= 0.1;
+				cameraPositionX -= 0.1;
+
+				glutTimerFunc(20, cameraAnimRight, value);
+			} else {
+				cameraPositionX = originalCamPosX - 5;
+				cameraPositionZ = Philip.robot_center.z;
+				moving = false;
+
+			}
+			break;
+		case 1:
+			//cameraPositionX = Philip.robot_center.x;
+			if (cameraPositionZ >= originalCamPosZ - 5) {
+				cameraPositionZ -= 0.1;
+				cameraPositionX += 0.1;
+
+				glutTimerFunc(20, cameraAnimRight, value);
+			} else {
+				cameraPositionZ = originalCamPosZ - 5;
+				cameraPositionX = Philip.robot_center.x;
+				moving = false;
+
+
+			}
+
+			break;
+		case 3:
+			if (cameraPositionZ <= originalCamPosZ + 5) {
+				cameraPositionZ += 0.1;
+				cameraPositionX -= 0.1;
+
+				glutTimerFunc(20, cameraAnimRight, value);
+			} else {
+				cameraPositionZ = originalCamPosZ + 5;
+				cameraPositionX = Philip.robot_center.x;
+				moving = false;
+
+
+			}
+			break;
+	}
+}
 
 void calcCameraLook(){
 	switch(camera_state){
 		case 0:
 			cameraPositionY = -2;
-			switch(Philip.direction){
-				case 0:
-					cameraPositionX = Philip.robot_center.x;
-					cameraPositionZ = Philip.robot_center.z-5;
-				break;
-				case 2:
-					cameraPositionX = Philip.robot_center.x;
-					cameraPositionZ = Philip.robot_center.z+5;
-				break;
-				case 1:
-					cameraPositionX = Philip.robot_center.x-5;
-					cameraPositionZ = Philip.robot_center.z;
-				break;
-				case 3:
-					cameraPositionX = Philip.robot_center.x+5;
-					cameraPositionZ = Philip.robot_center.z;
-				break;
+
+			if (firstRun || moving == false) {
+
+				switch (Philip.direction) {
+					case 0:
+						cameraPositionX = Philip.robot_center.x;
+						cameraPositionZ = Philip.robot_center.z - 5;
+						break;
+					case 2:
+						cameraPositionX = Philip.robot_center.x;
+						cameraPositionZ = Philip.robot_center.z + 5;
+						break;
+					case 1:
+						cameraPositionX = Philip.robot_center.x - 5;
+						cameraPositionZ = Philip.robot_center.z;
+						break;
+					case 3:
+						cameraPositionX = Philip.robot_center.x + 5;
+						cameraPositionZ = Philip.robot_center.z;
+						break;
+
+
+				}
+				firstRun = false;
 			}
 		break;
 		case 6:
@@ -174,9 +316,7 @@ void calcCameraLook(){
 				break;
 			}
 	}
-	
-	// cameraLookZ = cos(cameraAngle) * cameraDistance;
-	// cameraLookX = sin(cameraAngle) * cameraDistance;
+
 	cameraLookZ = Philip.robot_center.z;
 	cameraLookX = Philip.robot_center.x;
 }
@@ -302,15 +442,6 @@ void init(void)
 	glEnable(GL_CULL_FACE);     // Cull back facing polygons
 	glCullFace(GL_BACK);
 
-
-//	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-//
-//	glBindTexture(GL_TEXTURE_2D, ground);
-
-//	ground=LoadTexture("./ground.bmp");
-//	sky=LoadTexture("./sky.bmp");
-//	horizon=LoadTexture("./horizon.bmp");
-
 	// create some building
 	buildingInit();
 	//cout << "Starting robot...\n";
@@ -320,10 +451,28 @@ void init(void)
 }
 
 void destroy(int value) {
-	//cout << "destroying " << value << " height " << buildings[value]->height << endl;
 
 	if (buildings[value]->height >= 0) {
 		buildings[value]->height -= 0.1;
+	}
+}
+
+void rotateAnim(int value) {
+	if (value == 1) {
+		if (Philip.body_ROT <= startingBody + 90){
+			Philip.body_ROT += 2.5;
+			glutTimerFunc(20, rotateAnim, 1);
+		} else {
+			Philip.body_ROT = startingBody + 90;
+		}
+	} else {
+		if (Philip.body_ROT >= startingBody - 90){
+			Philip.body_ROT -= 2.5;
+			glutTimerFunc(20, rotateAnim, -1);
+		} else {
+			Philip.body_ROT = startingBody - 90;
+
+		}
 	}
 }
 
@@ -370,11 +519,8 @@ void draw_environment(GLenum mode){
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-		drawBuildings(mode);
+	drawBuildings(mode);
 
-//		glEnable(GL_TEXTURE_2D);
-//		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
-//		glBindTexture(GL_TEXTURE_2D, ground);
     glColor4f(0.1, 0.9, 0.1, 1.0);
 
     glBegin(GL_QUADS);
@@ -456,14 +602,8 @@ void cameraFunc(){
 	
 	gluPerspective(90, (GLfloat) windowWidth/(GLfloat) windowHeight, 1.0, 300.0);
 
-	// cout << "Cam height: " << cameraPositionY << " CamX: " << cameraLookX <<  " CamY: " << cameraLookZ << endl;
-	// cout << "Cam angle: " << cameraAngle << endl;
-
- //    cout << "Cam posX: " << cameraPositionX << " Cam posY: " << cameraPositionY <<  " CamY: " << endl;
-
 	calcCameraLook();
-	//cameraRobotCalc();
-	//gluLookAt(0, 3, -4.5, Philip.robot_center.x, Philip.robot_center.y+2, Philip.robot_center.z, 0, 1, 0);
+
 	gluLookAt(cameraPositionX, cameraPositionY, cameraPositionZ, cameraLookX, Philip.robot_center.y+2,cameraLookZ, 0, 1, 0);
 }
 
@@ -477,9 +617,6 @@ void reshape(int w, int h)
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluPerspective(90, (GLfloat) w/(GLfloat) h, 1.0, 300.0);
-
-	//calcCameraLook();
-	//gluLookAt(cameraPositionX, cameraHeight, cameraPositionY, cameraLookX, 0,cameraLookY, 0, 1, 0);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -523,18 +660,32 @@ void forwardMove(){
 void Turn(char t){
 	int x1 = Philip.robot_center.x, x2 = Philip.robot_center.z;
 	if(x1 % 10 == 0 && x2%10 == 0)
-		switch(t){
-			case 'q':
-				//check for intesection here.
-				Philip.body_ROT += 90;
-				Philip.direction = (Philip.direction+1)%4;
-				break;
-			case 'a':
-				//check for intesection here.
+		if (moving == false) {
+			switch (t) {
+				case 'q':
+					//check for intesection here.
+					glutTimerFunc(20, rotateAnim, 1);
+					startingBody = Philip.body_ROT;
+					//Philip.body_ROT += 90;
+					Philip.direction = (Philip.direction + 1) % 4;
+					originalCamPosX = cameraPositionX;
+					originalCamPosZ = cameraPositionZ;
+					glutTimerFunc(20, cameraAnimLeft, Philip.direction);
+					moving = true;
 
-				Philip.body_ROT -= 90;
-				Philip.direction = (Philip.direction+3)%4;
-				break;
+					break;
+				case 'a':
+					//check for intesection here.
+					glutTimerFunc(20, rotateAnim, -1);
+					originalCamPosX = cameraPositionX;
+					originalCamPosZ = cameraPositionZ;
+					glutTimerFunc(20, cameraAnimRight, Philip.direction);
+					//Philip.body_ROT -= 90;
+					startingBody = Philip.body_ROT;
+					Philip.direction = (Philip.direction + 3) % 4;
+					moving = true;
+					break;
+			}
 		}
 }
 
@@ -560,7 +711,7 @@ void keyboard (unsigned char key, int x, int y)
 			case 'r':
 				Philip.robot_center.x = 0;
 				Philip.robot_center.z = 0;
-				Philip.direction = 0;
+
 				break;
 			default:
 			//cout << "key: " << key << endl;
@@ -616,28 +767,33 @@ void processHits(GLint hits, GLuint buffer[])
 
 	//printf ("hits = %d\n", hits);
 	ptr = (GLint *) buffer;
+
+	int maxDepth = 0;
+	int minId = 0;
 	//cout << "Help...\n";
 	if(hits == 0) return;
-	for (i = 0; i < 1; i++) { // For each hit record,
+	cout << "Mouse click" << endl;
+	for (i = 0; i < hits; i++) { // For each hit record,
 		names = *ptr;             // How many names are in this hit record?
-		ptr += 3;                   // Skip the depth min and max information.
-		
-		for (j = 0; j < names; j++) { //  Look for each name in this record
+		ptr++;
+		int thing1 = *ptr;
+		ptr++;
+		int thing2 = *ptr;
+		ptr++;
+		int id = *ptr;
 
-			if (j == 0 && ptr != NULL){
-				//draw the laser.
-
-				buildings[*ptr]->display = false;
-			}
-
-			//out << *ptr << endl;
-
-
-			ptr++;                          // Go to the next name
+		if (maxDepth < thing1*-1) {
+			maxDepth = thing1 * -1;
+			cout << thing1 * -1 << endl;
+			minId = id;
 		}
-		// When this loop is done, ptr points to the start of the next hit record.
-		//printf("\n");
+		ptr++;
+		// Skip the depth min and max information.
+		cout << "hit record " << endl;
+		cout << names << " " <<  thing1 << " " << thing2 << " " << id << endl;
 	}
+
+	buildings[minId]->display = false;
 	//cout << "End of Processing hits" << endl;
 }
 
