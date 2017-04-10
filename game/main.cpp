@@ -52,6 +52,8 @@ int camera_state = 0;
 //VARIABLES TO HELP TRACK ROBOT
 Robot Philip(0,-4.5,0);
 
+bool paused;
+
 
 void calcCameraLook(){
 	switch(camera_state){
@@ -538,51 +540,63 @@ void Turn(char t){
 
 void keyboard (unsigned char key, int x, int y)
 {
-	switch (key) {
-		case 27:
-			exit(0);
-			break;
-		case 'z':
-			forwardMove();
-			break;
-		case 'q':
-			Turn('q');
-			break;
-		case 'a':
-			Turn('a');
-			break;
-		default:
-		//cout << "key: " << key << endl;
-			break;
+	if(key == 'p'){
+		paused = !paused;
+	}
+	if(!paused){
+		switch (key) {
+			case 27:
+				exit(0);
+				break;
+			case 'z':
+				forwardMove();
+				break;
+			case 'q':
+				Turn('q');
+				break;
+			case 'a':
+				Turn('a');
+				break;
+			case 'r':
+				Philip.robot_center.x = 0;
+				Philip.robot_center.z = 0;
+				Philip.direction = 0;
+				break;
+			default:
+			//cout << "key: " << key << endl;
+				break;
+		}
 	}
 
 }
 
 void SpecialInput(int key, int x, int y) {
-	switch (key) {
-		case GLUT_KEY_F1:
-			Philip.head_ROT = 0;
-			break;
-		case GLUT_KEY_F5:
-			camera_state = 5;
-			break;
-		case GLUT_KEY_F6:
-			camera_state = 6;
-			break;
-		case GLUT_KEY_F8:
-			camera_state = 8;
-			break;
-		case GLUT_KEY_F7:
-			camera_state = 7;
-			break;
-		case GLUT_KEY_F4:
-			camera_state = 0;
-			break;
-	}
-	if(key == GLUT_KEY_F2){
-		Philip.head_ROT = -90;
-	}else if(key == GLUT_KEY_F3){
-		Philip.head_ROT = 90;
+	if(!paused){
+		switch (key) {
+			case GLUT_KEY_F1:
+				Philip.head_ROT = 0;
+				break;
+			case GLUT_KEY_F5:
+				camera_state = 5;
+				break;
+			case GLUT_KEY_F6:
+				camera_state = 6;
+				break;
+			case GLUT_KEY_F8:
+				camera_state = 8;
+				break;
+			case GLUT_KEY_F7:
+				camera_state = 7;
+				break;
+			case GLUT_KEY_F4:
+				camera_state = 0;
+				break;
+		}
+		if(key == GLUT_KEY_F2){
+			Philip.head_ROT = -90;
+		}else if(key == GLUT_KEY_F3){
+			Philip.head_ROT = 90;
+		}
 	}
 }
 void upFunc(int c, int x, int y){
